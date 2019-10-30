@@ -195,8 +195,10 @@ export class ObservableObjectAdministration
     ) {
         const { target } = this
         options.name = options.name || `${this.name}.${stringifyKey(propName)}`
+        // computedValue
         this.values.set(propName, new ComputedValue(options))
         if (propertyOwner === target || isPropertyConfigurable(propertyOwner, propName))
+            // 真正设置 target[propName] 的 get set
             Object.defineProperty(propertyOwner, propName, generateComputedPropConfig(propName))
     }
 
@@ -347,6 +349,7 @@ export function asObservableObject(
         stringifyKey(name),
         defaultEnhancer
     )
+    // 实例化 adm , 并挂载到 target[$mobx] 上, 单例缓存
     addHiddenProp(target, $mobx, adm)
     return adm
 }
@@ -371,6 +374,7 @@ export function generateObservablePropConfig(propName) {
 }
 
 function getAdministrationForComputedPropOwner(owner: any): ObservableObjectAdministration {
+    // 单例，一个 target 只有一个 adm实例
     const adm = owner[$mobx]
     if (!adm) {
         // because computed props are declared on proty,
@@ -388,9 +392,11 @@ export function generateComputedPropConfig(propName) {
             configurable: globalState.computedConfigurable,
             enumerable: false,
             get() {
+                // amd.read
                 return getAdministrationForComputedPropOwner(this).read(propName)
             },
             set(v) {
+                // amd.write
                 getAdministrationForComputedPropOwner(this).write(propName, v)
             }
         })

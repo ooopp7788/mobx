@@ -40,10 +40,12 @@ function createPropertyInitializerDescriptor(
             configurable: true,
             enumerable: enumerable,
             get() {
+                // 包装get
                 initializeInstance(this)
                 return this[prop]
             },
             set(value) {
+                // 包装set
                 initializeInstance(this)
                 this[prop] = value
             }
@@ -54,9 +56,13 @@ function createPropertyInitializerDescriptor(
 export function initializeInstance(target: any)
 export function initializeInstance(target: DecoratorTarget) {
     if (target[mobxDidRunLazyInitializersSymbol] === true) return
+    // 获取 target 上的 decorators, decorators 对象以 propNname 为 key, 储存相应 prop 的 decorators
     const decorators = target[mobxPendingDecorators]
     if (decorators) {
+        // set target[mobxDidRunLazyInitializersSymbol]: true
         addHiddenProp(target, mobxDidRunLazyInitializersSymbol, true)
+        // 遍历调用 target.decorators 上的所有 prop 对应 decorator.propertyCreator 方法
+        // propertyCreator 方法就是 createPropDecorator 方法 第二个参数
         for (let key in decorators) {
             const d = decorators[key]
             d.propertyCreator(target, d.prop, d.descriptor, d.decoratorTarget, d.decoratorArguments)
@@ -68,9 +74,11 @@ export function createPropDecorator(
     propertyInitiallyEnumerable: boolean,
     propertyCreator: PropertyCreator
 ) {
+    // arguments: target, name, descriptor
     return function decoratorFactory() {
         let decoratorArguments: any[]
 
+        // run with arguments
         const decorator = function decorate(
             target: DecoratorTarget,
             prop: string,
@@ -89,6 +97,8 @@ export function createPropDecorator(
                 const inheritedDecorators = target[mobxPendingDecorators]
                 addHiddenProp(target, mobxPendingDecorators, { ...inheritedDecorators })
             }
+            // target[mobxPendingDecorators] 存放 decorators
+            // decorators: 以 propName 为 key, 存放 decorator
             target[mobxPendingDecorators]![prop] = {
                 prop,
                 propertyCreator,
@@ -96,12 +106,14 @@ export function createPropDecorator(
                 decoratorTarget: target,
                 decoratorArguments
             }
+            // 返回包裹后的 descriptor , 主要是set get
             return createPropertyInitializerDescriptor(prop, propertyInitiallyEnumerable)
         }
 
         if (quacksLikeADecorator(arguments)) {
             // @decorator
             decoratorArguments = EMPTY_ARRAY
+            // run decorator
             return decorator.apply(null, arguments as any)
         } else {
             // @decorator(args)

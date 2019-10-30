@@ -41,7 +41,7 @@ export function extendObservable<A extends Object, B extends Object>(
     }
 
     options = asCreateObservableOptions(options)
-    const defaultDecorator = getDefaultDecoratorFromObjectOptions(options)
+    const defaultDecorator = getDefaultDecoratorFromObjectOptions(options) // deepDecorator
     initializeInstance(target) // Fixes #1740
     asObservableObject(target, options.name, defaultDecorator.enhancer) // make sure object is observable, even without initial props
     if (properties)

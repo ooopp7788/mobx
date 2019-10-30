@@ -15,7 +15,8 @@ export interface IComputed {
     (target: Object, key: string | symbol, baseDescriptor?: PropertyDescriptor): void // decorator
     struct(target: Object, key: string | symbol, baseDescriptor?: PropertyDescriptor): void // decorator
 }
-
+// 装饰器语法
+// return function arguments: target, name, descriptor
 export const computedDecorator = createPropDecorator(
     false,
     (
@@ -25,11 +26,14 @@ export const computedDecorator = createPropDecorator(
         decoratorTarget: any,
         decoratorArgs: any[]
     ) => {
+        // 原始的 get, set
         const { get, set } = descriptor // initialValue is the descriptor for get / set props
         // Optimization: faster on decorator target or instance? Assuming target
         // Optimization: find out if declaring on instance isn't just faster. (also makes the property descriptor simpler). But, more memory usage..
         // Forcing instance now, fixes hot reloadig issues on React Native:
         const options = decoratorArgs[0] || {}
+        // asObservableObject(instance) 获取 adm, 如过没有 adm, 新实例化一个 adm
+        // 调用 adm.addComputedProp
         asObservableObject(instance).addComputedProp(instance, propertyName, {
             get,
             set,
