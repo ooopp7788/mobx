@@ -15,8 +15,8 @@ export interface IComputed {
     (target: Object, key: string | symbol, baseDescriptor?: PropertyDescriptor): void // decorator
     struct(target: Object, key: string | symbol, baseDescriptor?: PropertyDescriptor): void // decorator
 }
-// 装饰器语法
-// return function arguments: target, name, descriptor
+// 装饰器
+// return function (target, name, descriptor)
 export const computedDecorator = createPropDecorator(
     false,
     (

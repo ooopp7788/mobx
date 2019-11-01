@@ -106,7 +106,8 @@ export function createPropDecorator(
                 decoratorTarget: target,
                 decoratorArguments
             }
-            // 返回包裹后的 descriptor , 主要是set get
+            // 返回包裹后的 descriptor
+            // 装饰器语法执行完毕
             return createPropertyInitializerDescriptor(prop, propertyInitiallyEnumerable)
         }
 

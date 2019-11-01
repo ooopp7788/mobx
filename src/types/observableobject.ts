@@ -91,12 +91,15 @@ export class ObservableObjectAdministration
     }
 
     read(key: PropertyKey) {
+        // this.values.get(key) 获取 propName 对应 ComputedValue (或 ObservableValue) 实例, 并执行 get 方法
         return this.values.get(key)!.get()
     }
 
     write(key: PropertyKey, newValue) {
         const instance = this.target
         const observable = this.values.get(key)
+        // ComputedValue 实例
+        // @computed
         if (observable instanceof ComputedValue) {
             observable.set(newValue)
             return
@@ -113,6 +116,8 @@ export class ObservableObjectAdministration
             if (!change) return
             newValue = (change as any).newValue
         }
+        // ObservableValue 实例 prepareNewValue 方法
+        // prepareNewValue: 脏检测
         newValue = (observable as any).prepareNewValue(newValue)
 
         // notify spy & observers
@@ -195,10 +200,14 @@ export class ObservableObjectAdministration
     ) {
         const { target } = this
         options.name = options.name || `${this.name}.${stringifyKey(propName)}`
-        // computedValue
+        // 创建 computedValue 实例, 挂载到 this.values[propName] 下
+        // 每一个 computed prop 对应一个 computedValue 实例
         this.values.set(propName, new ComputedValue(options))
         if (propertyOwner === target || isPropertyConfigurable(propertyOwner, propName))
             // 真正设置 target[propName] 的 get set
+            // get 对应 adm.read(propName); set 对应 adm.wirte(propName, v)
+            // adm.read(propName) 实际是 对应 propName ComputedValue 实例的 get()
+            //
             Object.defineProperty(propertyOwner, propName, generateComputedPropConfig(propName))
     }
 
