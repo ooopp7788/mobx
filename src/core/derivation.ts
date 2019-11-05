@@ -185,6 +185,7 @@ export function trackDerivedFunction<T>(derivation: IDerivation, f: () => T, con
     derivation.runId = ++globalState.runId
     const prevTracking = globalState.trackingDerivation
     globalState.trackingDerivation = derivation
+    // 实际调用 get
     let result
     if (globalState.disableErrorBoundaries === true) {
         // get.call(target)

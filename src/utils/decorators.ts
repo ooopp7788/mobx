@@ -39,9 +39,13 @@ function createPropertyInitializerDescriptor(
         (cache[prop] = {
             configurable: true,
             enumerable: enumerable,
+            // get 或 set 时, 初始化 adm instance, lazy initialize instance
             get() {
                 // 包装get
+                // 第一次触发 prop get 时, 实例化 adm
+                // 调用 Object.defineProperty 覆盖 decorator 设置的 get set
                 initializeInstance(this)
+                // 触发 get, 此时调用新的 get: adm.read
                 return this[prop]
             },
             set(value) {
@@ -61,10 +65,11 @@ export function initializeInstance(target: DecoratorTarget) {
     if (decorators) {
         // set target[mobxDidRunLazyInitializersSymbol]: true
         addHiddenProp(target, mobxDidRunLazyInitializersSymbol, true)
+        // 仅执行一次, 初始化 adm instance
         // 遍历调用 target.decorators 上的所有 prop 对应 decorator.propertyCreator 方法
-        // propertyCreator 方法就是 createPropDecorator 方法 第二个参数
         for (let key in decorators) {
             const d = decorators[key]
+            // propertyCreator: 初始化 instance
             d.propertyCreator(target, d.prop, d.descriptor, d.decoratorTarget, d.decoratorArguments)
         }
     }

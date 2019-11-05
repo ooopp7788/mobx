@@ -208,8 +208,8 @@ export class ObservableObjectAdministration
         if (propertyOwner === target || isPropertyConfigurable(propertyOwner, propName))
             // 真正设置 target[propName] 的 get set
             // get 对应 adm.read(propName); set 对应 adm.wirte(propName, v)
-            // adm.read(propName) 实际是 对应 propName ComputedValue 实例的 get()
-            // 也就是 [propName] 最初的 get set
+            // adm.read(propName) 实际会调用 对应 propName ComputedValue 实例的 get()
+            // 也就是 [propName] 最初设置的 get set
             Object.defineProperty(propertyOwner, propName, generateComputedPropConfig(propName))
     }
 

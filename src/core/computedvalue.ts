@@ -226,7 +226,7 @@ export class ComputedValue<T> implements IObservable, IComputedValue<T>, IDeriva
         if (track) {
             // this.derivation = option.get
             // this.scope = option.context (target)
-            // trackDerivedFunction 实际调用 get.call(target)
+            // trackDerivedFunction 实际调用和 else 中一致
             res = trackDerivedFunction(this, this.derivation, this.scope)
         } else {
             if (globalState.disableErrorBoundaries === true) {
