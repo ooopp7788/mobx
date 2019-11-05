@@ -187,6 +187,7 @@ export function trackDerivedFunction<T>(derivation: IDerivation, f: () => T, con
     globalState.trackingDerivation = derivation
     let result
     if (globalState.disableErrorBoundaries === true) {
+        // get.call(target)
         result = f.call(context)
     } else {
         try {

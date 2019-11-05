@@ -98,8 +98,7 @@ export class ObservableObjectAdministration
     write(key: PropertyKey, newValue) {
         const instance = this.target
         const observable = this.values.get(key)
-        // ComputedValue 实例
-        // @computed
+        // @computed ComputedValue 实例
         if (observable instanceof ComputedValue) {
             observable.set(newValue)
             return
@@ -116,12 +115,14 @@ export class ObservableObjectAdministration
             if (!change) return
             newValue = (change as any).newValue
         }
-        // ObservableValue 实例 prepareNewValue 方法
+
+        // @observable ObservableValue 实例 prepareNewValue 方法
         // prepareNewValue: 脏检测
         newValue = (observable as any).prepareNewValue(newValue)
 
         // notify spy & observers
         if (newValue !== globalState.UNCHANGED) {
+            // 检测是否有 observers 需要通知
             const notify = hasListeners(this)
             const notifySpy = isSpyEnabled()
             const change =
@@ -138,6 +139,7 @@ export class ObservableObjectAdministration
             if (notifySpy && process.env.NODE_ENV !== "production")
                 spyReportStart({ ...change, name: this.name, key })
             ;(observable as ObservableValue<any>).setNewValue(newValue)
+            // 通知 observers 执行回调
             if (notify) notifyListeners(this, change)
             if (notifySpy && process.env.NODE_ENV !== "production") spyReportEnd()
         }
@@ -207,7 +209,7 @@ export class ObservableObjectAdministration
             // 真正设置 target[propName] 的 get set
             // get 对应 adm.read(propName); set 对应 adm.wirte(propName, v)
             // adm.read(propName) 实际是 对应 propName ComputedValue 实例的 get()
-            //
+            // 也就是 [propName] 最初的 get set
             Object.defineProperty(propertyOwner, propName, generateComputedPropConfig(propName))
     }
 
@@ -286,6 +288,7 @@ export class ObservableObjectAdministration
      * See: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/observe
      * for callback details
      */
+    // 注册 changeListeners
     observe(callback: (changes: IObjectDidChange) => void, fireImmediately?: boolean): Lambda {
         process.env.NODE_ENV !== "production" &&
             invariant(

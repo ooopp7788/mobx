@@ -218,11 +218,15 @@ export class ComputedValue<T> implements IObservable, IComputedValue<T>, IDeriva
         return changed
     }
 
+    // 计算新值, 并返回
     computeValue(track: boolean) {
         this.isComputing = true
         globalState.computationDepth++
         let res: T | CaughtException
         if (track) {
+            // this.derivation = option.get
+            // this.scope = option.context (target)
+            // trackDerivedFunction 实际调用 get.call(target)
             res = trackDerivedFunction(this, this.derivation, this.scope)
         } else {
             if (globalState.disableErrorBoundaries === true) {
