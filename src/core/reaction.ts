@@ -75,10 +75,15 @@ export class Reaction implements IDerivation, IReactionPublic {
         this.schedule()
     }
 
+    // 添加本次 reaction，并顺序执行所有 reactions
     schedule() {
         if (!this._isScheduled) {
             this._isScheduled = true
+            // 添加到 reactions 队列
+            // Q: 为何挂载到 globalState 上, 而不挂载到实例中
             globalState.pendingReactions.push(this)
+            // 一次调用 global.pendingReactions 队列实例的 runReaction 方法
+            // 实际调用的是 this.runReaction
             runReactions()
         }
     }
@@ -98,6 +103,8 @@ export class Reaction implements IDerivation, IReactionPublic {
                 this._isTrackPending = true
 
                 try {
+                    // 执行 onInvalidate
+                    // 实际调用 this.track
                     this.onInvalidate()
                     if (
                         this._isTrackPending &&
@@ -134,6 +141,8 @@ export class Reaction implements IDerivation, IReactionPublic {
             })
         }
         this._isRunning = true
+        // 执行 fn
+        //
         const result = trackDerivedFunction(this, fn, undefined)
         this._isRunning = false
         this._isTrackPending = false
@@ -246,6 +255,7 @@ function runReactionsHelper() {
         }
         let remainingReactions = allReactions.splice(0)
         for (let i = 0, l = remainingReactions.length; i < l; i++)
+            // 依次执行 Reaction 实例的 runReaction
             remainingReactions[i].runReaction()
     }
     globalState.isRunningReactions = false

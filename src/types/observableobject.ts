@@ -76,6 +76,7 @@ export type IObjectWillChange =
 export class ObservableObjectAdministration
     implements IInterceptable<IObjectWillChange>, IListenable {
     keysAtom: IAtom
+    // 观察者
     changeListeners
     interceptors
     private proxy: any
@@ -105,13 +106,16 @@ export class ObservableObjectAdministration
         }
 
         // intercept
+        // observerable 对象中使用，用于修改 change 对象
         if (hasInterceptors(this)) {
+            // 传入初始 change 对象，顺序执行 interceptors，链式调用
             const change = interceptChange<IObjectWillChange>(this, {
                 type: "update",
                 object: this.proxy || instance,
                 name: key,
                 newValue
             })
+            // change 不存在时，直接返回
             if (!change) return
             newValue = (change as any).newValue
         }
@@ -139,7 +143,7 @@ export class ObservableObjectAdministration
             if (notifySpy && process.env.NODE_ENV !== "production")
                 spyReportStart({ ...change, name: this.name, key })
             ;(observable as ObservableValue<any>).setNewValue(newValue)
-            // 通知 observers 执行回调
+            // 通知 listeners 执行回调，回调入参为 change 对象
             if (notify) notifyListeners(this, change)
             if (notifySpy && process.env.NODE_ENV !== "production") spyReportEnd()
         }
@@ -288,7 +292,7 @@ export class ObservableObjectAdministration
      * See: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/observe
      * for callback details
      */
-    // 注册 changeListeners
+    // 注册 changeListeners，为当前可观察对象添加listeners
     observe(callback: (changes: IObjectDidChange) => void, fireImmediately?: boolean): Lambda {
         process.env.NODE_ENV !== "production" &&
             invariant(

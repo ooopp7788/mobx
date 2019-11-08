@@ -67,7 +67,9 @@ export interface IComputedValueOptions<T> {
  * If at any point it's outside batch and it isn't observed: reset everything and go to 1.
  */
 export class ComputedValue<T> implements IObservable, IComputedValue<T>, IDerivation {
+    // dependence 状态
     dependenciesState = IDerivationState.NOT_TRACKING
+    // 观察的对象: 当前实例依赖的可观察对象
     observing: IObservable[] = [] // nodes we are looking at. Our value depends on these nodes
     newObserving = null // during tracking it's an array with new observed observers
     isBeingObserved = false
@@ -107,6 +109,8 @@ export class ComputedValue<T> implements IObservable, IComputedValue<T>, IDeriva
     constructor(options: IComputedValueOptions<T>) {
         if (process.env.NODE_ENV !== "production" && !options.get)
             throw "[mobx] missing option for computed: get"
+        // get
+        // derivation: 推导
         this.derivation = options.get!
         this.name = options.name || "ComputedValue@" + getNextId()
         if (options.set) this.setter = createAction(this.name + "-setter", options.set) as any
@@ -226,7 +230,6 @@ export class ComputedValue<T> implements IObservable, IComputedValue<T>, IDeriva
         if (track) {
             // this.derivation = option.get
             // this.scope = option.context (target)
-            // trackDerivedFunction 实际调用和 else 中一致
             res = trackDerivedFunction(this, this.derivation, this.scope)
         } else {
             if (globalState.disableErrorBoundaries === true) {
@@ -254,8 +257,10 @@ export class ComputedValue<T> implements IObservable, IComputedValue<T>, IDeriva
     observe(listener: (change: IValueDidChange<T>) => void, fireImmediately?: boolean): Lambda {
         let firstTime = true
         let prevValue: T | undefined = undefined
+        // 返回 disposer
         return autorun(() => {
             let newValue = this.get()
+            // 非首次时, 发出 update 事件
             if (!firstTime || fireImmediately) {
                 const prevU = untrackedStart()
                 listener({

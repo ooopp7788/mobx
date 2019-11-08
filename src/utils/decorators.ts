@@ -45,7 +45,9 @@ function createPropertyInitializerDescriptor(
                 // 第一次触发 prop get 时, 实例化 adm
                 // 调用 Object.defineProperty 覆盖 decorator 设置的 get set
                 initializeInstance(this)
-                // 触发 get, 此时调用新的 get: adm.read
+                // 此时这个 get set 已经被覆盖
+                // this[prop] 又会触发 target[prop] 的 get，从而自动执行一次 覆盖后的 get
+                // 调用新的 get: adm.read
                 return this[prop]
             },
             set(value) {

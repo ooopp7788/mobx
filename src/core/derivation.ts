@@ -179,16 +179,16 @@ export function trackDerivedFunction<T>(derivation: IDerivation, f: () => T, con
     const prevAllowStateReads = allowStateReadsStart(true)
     // pre allocate array allocation + room for variation in deps
     // array will be trimmed by bindDependencies
+    // 状态重置
     changeDependenciesStateTo0(derivation)
     derivation.newObserving = new Array(derivation.observing.length + 100)
     derivation.unboundDepsCount = 0
     derivation.runId = ++globalState.runId
     const prevTracking = globalState.trackingDerivation
     globalState.trackingDerivation = derivation
-    // 实际调用 get
+    // 调用 f 方法
     let result
     if (globalState.disableErrorBoundaries === true) {
-        // get.call(target)
         result = f.call(context)
     } else {
         try {
