@@ -293,6 +293,7 @@ export class ObservableObjectAdministration
      * for callback details
      */
     // 注册 changeListeners，为当前可观察对象添加listeners
+    // 观察 target
     observe(callback: (changes: IObjectDidChange) => void, fireImmediately?: boolean): Lambda {
         process.env.NODE_ENV !== "production" &&
             invariant(

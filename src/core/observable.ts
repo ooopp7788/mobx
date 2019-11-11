@@ -102,11 +102,13 @@ export function queueForUnobservation(observable: IObservable) {
  * During a batch `onBecomeUnobserved` will be called at most once per observable.
  * Avoids unnecessary recalculations.
  */
+// 记录 batch 次数
 export function startBatch() {
     globalState.inBatch++
 }
 
 export function endBatch() {
+    // 当所有 batch 都 end 时，也就是最后一个 endBatch 执行时，进入 if
     if (--globalState.inBatch === 0) {
         runReactions()
         // the batch is actually about to finish, all unobserving should happen here.

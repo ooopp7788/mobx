@@ -181,7 +181,9 @@ export function trackDerivedFunction<T>(derivation: IDerivation, f: () => T, con
     // array will be trimmed by bindDependencies
     // 状态重置
     changeDependenciesStateTo0(derivation)
+    // 由 observing 队列，创建 newObserving 队列
     derivation.newObserving = new Array(derivation.observing.length + 100)
+    // 未被绑定的Deps
     derivation.unboundDepsCount = 0
     derivation.runId = ++globalState.runId
     const prevTracking = globalState.trackingDerivation

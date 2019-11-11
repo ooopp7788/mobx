@@ -81,6 +81,7 @@ export class Reaction implements IDerivation, IReactionPublic {
             this._isScheduled = true
             // 添加到 reactions 队列
             // Q: 为何挂载到 globalState 上, 而不挂载到实例中
+            //
             globalState.pendingReactions.push(this)
             // 一次调用 global.pendingReactions 队列实例的 runReaction 方法
             // 实际调用的是 this.runReaction
@@ -233,6 +234,7 @@ let reactionScheduler: (fn: () => void) => void = f => f()
 
 export function runReactions() {
     // Trampolining, if runReactions are already running, new reactions will be picked up
+    // 防止循环调用 runReactions
     if (globalState.inBatch > 0 || globalState.isRunningReactions) return
     reactionScheduler(runReactionsHelper)
 }

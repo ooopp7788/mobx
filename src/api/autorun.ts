@@ -48,9 +48,11 @@ export function autorun(
 
     if (runSync) {
         // normal autorun
+        // 创建 reaction 实例
         reaction = new Reaction(
             name,
             function(this: Reaction) {
+                // 执行 reaction 时，track 依赖
                 this.track(reactionRunner)
             },
             opts.onError,
@@ -81,6 +83,7 @@ export function autorun(
         view(reaction)
     }
 
+    // 默认执行一次 reaction
     reaction.schedule()
     return reaction.getDisposer()
 }

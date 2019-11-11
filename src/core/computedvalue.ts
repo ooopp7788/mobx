@@ -148,9 +148,11 @@ export class ComputedValue<T> implements IObservable, IComputedValue<T>, IDeriva
      * Will evaluate its computation first if needed.
      */
     public get(): T {
+        // 检测循环依赖
         if (this.isComputing) fail(`Cycle detected in computation ${this.name}: ${this.derivation}`)
         if (globalState.inBatch === 0 && this.observers.size === 0 && !this.keepAlive) {
             if (shouldCompute(this)) {
+                // warn
                 this.warnAboutUntrackedRead()
                 startBatch() // See perf test 'computed memoization'
                 this.value = this.computeValue(false)
@@ -228,10 +230,10 @@ export class ComputedValue<T> implements IObservable, IComputedValue<T>, IDeriva
         globalState.computationDepth++
         let res: T | CaughtException
         if (track) {
-            // this.derivation = option.get
-            // this.scope = option.context (target)
+            // track 依赖
             res = trackDerivedFunction(this, this.derivation, this.scope)
         } else {
+            // 直接调用 get, 仅仅获取值
             if (globalState.disableErrorBoundaries === true) {
                 res = this.derivation.call(this.scope)
             } else {
@@ -254,6 +256,7 @@ export class ComputedValue<T> implements IObservable, IComputedValue<T>, IDeriva
         }
     }
 
+    // 观察prop
     observe(listener: (change: IValueDidChange<T>) => void, fireImmediately?: boolean): Lambda {
         let firstTime = true
         let prevValue: T | undefined = undefined
