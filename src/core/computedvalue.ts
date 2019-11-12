@@ -113,6 +113,7 @@ export class ComputedValue<T> implements IObservable, IComputedValue<T>, IDeriva
         // derivation: 推导
         this.derivation = options.get!
         this.name = options.name || "ComputedValue@" + getNextId()
+        // 包装 setter 为 executeAction(`${name}-setter`, set, ...)
         if (options.set) this.setter = createAction(this.name + "-setter", options.set) as any
         this.equals =
             options.equals ||
@@ -159,6 +160,9 @@ export class ComputedValue<T> implements IObservable, IComputedValue<T>, IDeriva
                 endBatch()
             }
         } else {
+            // this 被 observed
+            // 给 this 增加 observer: globalState.trackingDerivation
+            // reportObserved 仅仅 将 globalState.trackingDerivation 缓存在 this.newObserving 队列中
             reportObserved(this)
             if (shouldCompute(this)) if (this.trackAndCompute()) propagateChangeConfirmed(this)
         }
@@ -256,7 +260,7 @@ export class ComputedValue<T> implements IObservable, IComputedValue<T>, IDeriva
         }
     }
 
-    // 观察prop
+    // 观察当前value
     observe(listener: (change: IValueDidChange<T>) => void, fireImmediately?: boolean): Lambda {
         let firstTime = true
         let prevValue: T | undefined = undefined

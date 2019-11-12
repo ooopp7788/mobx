@@ -175,6 +175,7 @@ export function checkIfStateReadsAreAllowed(observable: IObservable) {
  * The tracking information is stored on the `derivation` object and the derivation is registered
  * as observer of any of the accessed observables.
  */
+// track f 函数所依赖的 observable 对象
 export function trackDerivedFunction<T>(derivation: IDerivation, f: () => T, context: any) {
     const prevAllowStateReads = allowStateReadsStart(true)
     // pre allocate array allocation + room for variation in deps
@@ -186,9 +187,14 @@ export function trackDerivedFunction<T>(derivation: IDerivation, f: () => T, con
     // 未被绑定的Deps
     derivation.unboundDepsCount = 0
     derivation.runId = ++globalState.runId
+    // 记录旧的
     const prevTracking = globalState.trackingDerivation
+    // 改写成新的 trackingDerivation，即当前 reaction
     globalState.trackingDerivation = derivation
     // 调用 f 方法
+    // f 方法中依赖的值，会触发 observable 的 get 方法
+    // ComputeValue.get or ObservableValue.get
+    // 两者判断为依赖后，会调用 reportObserved
     let result
     if (globalState.disableErrorBoundaries === true) {
         result = f.call(context)
@@ -228,6 +234,8 @@ function warnAboutDerivationWithoutDependencies(derivation: IDerivation) {
  * update observing to be newObserving with unique observables
  * notify observers that become observed/unobserved
  */
+// 正式绑定依赖关系
+// 将 newObserving 与 observing diff 后，生成新的 observing
 function bindDependencies(derivation: IDerivation) {
     // invariant(derivation.dependenciesState !== IDerivationState.NOT_TRACKING, "INTERNAL ERROR bindDependencies expects derivation.dependenciesState !== -1");
     const prevObserving = derivation.observing

@@ -108,7 +108,7 @@ export function startBatch() {
 }
 
 export function endBatch() {
-    // 当所有 batch 都 end 时，也就是最后一个 endBatch 执行时，进入 if
+    // 当所有 batch 都 end 时，也就是最后一个 endBatch 执行时，进入 if，执行下一个 reactions
     if (--globalState.inBatch === 0) {
         runReactions()
         // the batch is actually about to finish, all unobserving should happen here.
@@ -143,9 +143,11 @@ export function reportObserved(observable: IObservable): boolean {
          * Check if last time this observable was accessed the same runId is used
          * if this is the case, the relation is already known
          */
+        // 对连续的相同的 runId 进行优化
         if (derivation.runId !== observable.lastAccessedBy) {
             observable.lastAccessedBy = derivation.runId
             // Tried storing newObserving, or observing, or both as Set, but performance didn't come close...
+            // newObserving 添加 observer
             derivation.newObserving![derivation.unboundDepsCount++] = observable
             if (!observable.isBeingObserved) {
                 observable.isBeingObserved = true
